@@ -8,11 +8,44 @@ var data = {};
 var last_device_number = -1
 var menu_updated = false	
 
+var last_module = null;
+
+/*	module_max_range contains module names and the max of the 
+	range. This is the list of modules we have ranges for:
+		- Accelerometer (MPU6050 accelerometer with Loom Kit)
+		- Analog (Pressurometer with Loom Kit)
+		- Digital (Button with Loom Kit)
+*/
+
+var module_max_range = {
+	"MPU6050":3,
+	"Analog":5000,
+	"Digital":2
+};
 
 // Upon new data
 function json(j)
 {
 	data = JSON.parse(j); // js object
+
+	cur_module = this.patcher.getnamed("module_selection").getvalueof();
+	
+	/*	TODO: 	This should only be called when the menu selection changes,
+				right now it is called every update
+	*/
+	if(last_module != cur_module) {
+		post("-"+last_module + "-\n")
+		post(">"+cur_module + "<\n")
+		last_module = cur_module;
+		post("Module updated \n")
+	
+		
+		
+		//	Set the scroller range
+		var scroller = this.patcher.getnamed("scroller");
+		scroller.setmin(-1 * module_max_range[cur_module])
+		scroller.setmax(1 * module_max_range[cur_module])
+	}
 	
 	// Check device instance number
 	if (menu_updated && device_changed() ) {
